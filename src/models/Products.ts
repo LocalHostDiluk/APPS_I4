@@ -28,6 +28,17 @@ const productSchema = new Schema<IProduct>({
     type: Number,
     required: true,
   },
+  createDate: {
+    type: Date,
+    required: true
+  },
+  deleteDate: {
+    type: Date
+  },
+  status: {
+    type: Boolean,
+    required: true
+  }
 });
 
 export const Product = model<IProduct>("Product", productSchema);

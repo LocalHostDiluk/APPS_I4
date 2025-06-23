@@ -9,6 +9,7 @@ import {
   deleteUser,
 } from "../controllers/auth.controller";
 
+
 const router = Router();
 
 router.post("/login", login);
