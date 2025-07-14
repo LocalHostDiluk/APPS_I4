@@ -32,7 +32,7 @@ export const login = async (req: Request, res: Response) => {
 
   //(identificador unico, infor a guardar(token), tiempo de vida) Agregar token con tiempo de vida de 15 minutos
   cache.set(user.id, accessToken, 60 * 30);
-  res.json({ accessToken });
+  res.json({ accessToken, user });
 };
 
 export const getTimeToken = (req: Request, res: Response) => {
