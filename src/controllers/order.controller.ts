@@ -2,6 +2,19 @@ import { Request, Response } from "express";
 import { Order } from "../models/Order";
 import { Product } from "../models/Products";
 
+export const getOrders = async (req: Request, res: Response) => {
+  try {
+    const orders = await Order.find()
+      .populate("products.productId", "name price")
+      .sort({ createDate: -1 });
+
+    res.json(orders);
+  } catch (error) {
+    console.error("Error al obtener las órdenes:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
 export const createOrder = async (req: Request, res: Response) => {
   try {
     const { userId, status, products } = req.body;
@@ -15,13 +28,11 @@ export const createOrder = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Datos incompletos o inválidos" });
     }
 
-    // Validar que cada producto exista
     const validatedProducts = [];
     let subtotal = 0;
 
     for (const item of products) {
       const { productId, quantity, price } = item;
-
       if (!productId || !quantity || price == null) {
         return res
           .status(400)
@@ -38,7 +49,7 @@ export const createOrder = async (req: Request, res: Response) => {
       subtotal += quantity * price;
       validatedProducts.push({ productId, quantity, price });
     }
-    
+
     const iva = subtotal * 0.16;
     const total = subtotal + iva;
 
@@ -66,43 +77,39 @@ export const updateOrder = async (req: Request, res: Response) => {
     const { status } = req.body;
 
     const order = await Order.findById(idOrder);
-
     if (!order) {
       return res.status(404).json({ message: "Orden no encontrada" });
     }
 
-    if (status != "Pagado") {
-      return res.status(404).json({ message: "Status incorrecto" });
+    if (!["Pendiente", "Pagado", "Cancelado"].includes(status)) {
+      return res.status(400).json({ message: "Status incorrecto" });
     }
 
-    if (status) order.status = status;
+    order.status = status;
     await order.save();
-    res.json({ message: "Orden actualizado correctamente", order });
+
+    res.json({ message: "Orden actualizada correctamente", order });
   } catch (error) {
-    console.log("Error actualizar orden", error);
+    console.error("Error actualizar orden", error);
+    res.status(500).json({ message: "Error al actualizar" });
   }
 };
 
 export const deleteOrder = async (req: Request, res: Response) => {
   try {
     const { idOrder } = req.params;
-    const { status } = req.body;
 
     const order = await Order.findById(idOrder);
-
     if (!order) {
       return res.status(404).json({ message: "Orden no encontrada" });
     }
 
-    if (status != "Cancelado") {
-      return res.status(404).json({ message: "Status incorrecto" });
-    }
-
-    if (status) order.status = status;
+    order.status = "Cancelado";
     await order.save();
-    res.json({ message: "Orden actualizado correctamente", order });
+
+    res.json({ message: "Orden cancelada correctamente", order });
   } catch (error) {
-    console.log("Error actualizar orden", error);
+    console.error("Error al cancelar orden", error);
+    res.status(500).json({ message: "Error al cancelar" });
   }
 };
-

@@ -7,6 +7,7 @@ import productRoutes from "./routes/product.routes";
 import roleRoutes from "./routes/role.routes";
 import connectDB from "./config/db";
 import menuRoutes from "./routes/menu.routes";
+import reportRoutes from "./routes/report.routes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +20,7 @@ app.use("/app", orderRoutes);
 app.use("/app", productRoutes);
 app.use("/app", roleRoutes);
 app.use("/app", menuRoutes);
+app.use("/app", reportRoutes);
 
 connectDB().then(() => {
   app.listen(PORT, () => {
